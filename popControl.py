@@ -11,8 +11,15 @@ class Population(object):
         if os.path.isfile('previousPop.shelve'):
             print 'Using previous population'
             slv = shelve.open('previousPop.shelve')
-            self.population = slv['population']
-            self.genCount = slv['genNumber']
+            if len(slv['population'])<PLAYERTOTAL:
+                print 'discarting population'
+                self.population = []
+                for i in range(0,PLAYERTOTAL):
+                    self.population.append(Player())
+                self.genCount = 0
+            else:
+                self.population = slv['population']
+                self.genCount = slv['genNumber']
             slv.close()
         else:
             self.population = []
@@ -59,6 +66,9 @@ class Population(object):
         for i in range(0,PLAYERTOTAL):
             partnerA = random.choice(self.matingpool)
             partnerB = random.choice(self.matingpool)
+            while partnerA == partnerB:
+                print 'equal... resselecting'
+                partnerB = random.choice(self.matingpool)
             child = partnerA.crossover(partnerB)
             self.population[i] = Player(child)
         self.genCount += 1

@@ -35,12 +35,12 @@ class Player(object):
             self.count = 0
             move = self.keys[random.randint(0,GENES)]
         
-        if move == Keys.UP:
-            print 'UP ',
-        elif move == Keys.DOWN:
-            print 'DOWN ',
-        elif move == Keys.LEFT:
-            print 'LEFT ',
-        elif move == Keys.RIGHT:
-            print 'RIGHT ',
+        # if move == Keys.UP:
+        #     print 'UP ',
+        # elif move == Keys.DOWN:
+        #     print 'DOWN ',
+        # elif move == Keys.LEFT:
+        #     print 'LEFT ',
+        # elif move == Keys.RIGHT:
+        #     print 'RIGHT ',
         return move

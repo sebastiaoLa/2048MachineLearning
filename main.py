@@ -7,6 +7,9 @@ fire = webdriver.Firefox()
 population  = Population()
 
 while True:
+    if population.actualPlayer == 0:
+        fire.close()
+        fire = webdriver.Firefox()
     fire.get('https://gabrielecirulli.github.io/2048/')
     el = fire.find_element_by_tag_name("body")
     end = False
