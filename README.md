@@ -1,3 +1,7 @@
-# 2048MachineLearning (stand by for now)
-since 2048 is a random game simple genetic algorithm can't find a single solution, so when i learn real machine learning i will be back
-using genetic algorithm to play 2048
+# 2048MachineLearning (work in progress)
+
+## special thanks to 
+(facebook:https://www.facebook.com/ramon.formiga) Ramon Formiga: for the creation of the equation (x' = (x-16384)/16384) to normalize neurons data
+    
+
+
