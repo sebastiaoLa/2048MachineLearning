@@ -1,20 +1,24 @@
 import random
 
+from dna import Dna
 from player import Player
+from perceptron import Perceptron
 from constants import PLAYERTOTAL
 import shelve
 import os.path
+
 
 class Population(object):
 
     def __init__(self):
         if os.path.isfile('previousPop.shelve'):
+        # if False:
             print 'Using previous population'
             slv = shelve.open('previousPop.shelve')
-            if len(slv['population'])<PLAYERTOTAL:
+            if len(slv['population']) < PLAYERTOTAL:
                 print 'discarting population'
                 self.population = []
-                for i in range(0,PLAYERTOTAL):
+                for i in range(0, PLAYERTOTAL):
                     self.population.append(Player())
                 self.genCount = 0
             else:
@@ -23,54 +27,45 @@ class Population(object):
             slv.close()
         else:
             self.population = []
-            for i in range(0,PLAYERTOTAL):
+            for i in range(0, PLAYERTOTAL):
                 self.population.append(Player())
             self.genCount = 0
         self.actualPlayer = 0
-        
-        
-    def play(self):
+        self.matingpool = []
 
-        return self.population[self.actualPlayer].play()
+    def play(self, inputs):
+        return self.population[self.actualPlayer].play(inputs)
 
-    def set_fitness(self,fitness,modifier):
-        self.modifier = modifier
+    def set_fitness(self, fitness):
         self.population[self.actualPlayer].fitness = fitness
         self.next_player()
 
-    def calcFitness(self):
-        maxFitness = 0
+    def get_best(self):
+        player = None
+        max_fitness = 0
         for i in self.population:
-            if i.fitness > maxFitness:
-                maxFitness = i.fitness
-        
-        for i in self.population:
-            i.fitness = float(i.fitness)/maxFitness
+            if player is not None:
+                if i.fitness > max_fitness:
+                    max_fitness = i.fitness
+                    player = i
+            else:
+                player = i
+        return i
 
     def gen_matingpool(self):
-        self.calcFitness()
-        self.matingpool = []
-        print ''
-        print 'fitness: '
-        for i in self.population:
-            print self.population.index(i),' ',int(i.fitness*100)*self.modifier,
-            if i.fitness*100 > 30:
-                self.matingpool += [i.dna]*int(i.fitness*100)*self.modifier
-                print ''
-            else:
-                print 'dead'
-
+        player = self.get_best()
+        self.matingpool = [
+            (i.neurons[0].dna.mutate(Dna()),
+             i.neurons[1].dna.mutate(Dna())) for i in self.population]
 
     def newGen(self):
         self.gen_matingpool()
-        for i in range(0,PLAYERTOTAL):
-            partnerA = random.choice(self.matingpool)
-            partnerB = random.choice(self.matingpool)
-            while partnerA == partnerB:
-                print 'equal... resselecting'
-                partnerB = random.choice(self.matingpool)
-            child = partnerA.crossover(partnerB)
-            self.population[i] = Player(child)
+        for i in range(0, PLAYERTOTAL):
+            perceptrons = []
+            for j in range(0, 2):
+                perceptrons.append(Perceptron(self.matingpool[i][j]))
+            self.population[i] = Player(perceptrons)
+
         self.genCount += 1
         self.actualPlayer = 0
         print ''
@@ -83,9 +78,7 @@ class Population(object):
         print self.genCount
 
     def next_player(self):
-        if self.actualPlayer<PLAYERTOTAL-1:
+        if self.actualPlayer < PLAYERTOTAL-1:
             self.actualPlayer += 1
         else:
             self.newGen()
-
-        

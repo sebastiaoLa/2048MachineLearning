@@ -2,49 +2,71 @@ from selenium import webdriver
 from popControl import Population
 from constants import PLAYERTOTAL
 
-fire = webdriver.Firefox()
+population = Population()
 
-population  = Population()
 
+def fill_inputs(fire):
+    inputs = []
+    for x in range(1, 5):
+        for y in range(1, 5):
+            num = 0
+            try:
+                el = fire.find_element_by_class_name(
+                    'tile-position-{}-{}'.format(x, y))
+                num = int(el.text)
+            except Exception as e:
+                # print e, 'tile-position-{}-{}'.format(x, y)
+                pass
+            inputs.append(num)
+    return inputs
+
+
+FIRE = webdriver.Firefox()
+FIRE.get('https://gabrielecirulli.github.io/2048/')
 while True:
-    if population.actualPlayer == 0:
-        fire.close()
-        fire = webdriver.Firefox()
-    fire.get('https://gabrielecirulli.github.io/2048/')
-    el = fire.find_element_by_tag_name("body")
-    end = False
-    while not end:
-        el.send_keys(population.play())
+    if population.actualPlayer == 0 and population.genCount > 1:
         try:
-            aux = fire.find_element_by_class_name("game-over")
+            el = FIRE.find_element_by_class_name('best-container')
+            print ''
+            print 'best of gen: ', el.text
+            print ''
+            FIRE.close()
+            FIRE = webdriver.Firefox()
+            FIRE.get('https://gabrielecirulli.github.io/2048/')
+        except:
+            pass
+
+    el = FIRE.find_element_by_tag_name("body")
+    end = False
+    inputs = []
+    tries = 0
+    while not end:
+        old_inputs = list(inputs)
+        inputs = fill_inputs(FIRE)
+        while sum(inputs) == 0:
+            print 'get again'
+            inputs = fill_inputs(FIRE)
+        if old_inputs == inputs and old_inputs != []:
+            tries += 1
+            if tries > 3:
+                end = True
+        el.send_keys(population.play(inputs))
+        try:
+            aux = FIRE.find_element_by_class_name("game-over")
             end = True
         except:
             pass
     while True:
         try:
-            score = int(fire.find_element_by_class_name('score-container').text)
+            score = int(FIRE.find_element_by_class_name(
+                'score-container').text)
             break
         except:
             pass
-    score2 = 0
-    modifier = 1
-    for i in fire.find_elements_by_class_name('tile-inner'):
-        try:
-            score2 = int(i.text)
-            if score2>=128:
-                modifier = modifier * {128:2,256:4,512:6,1024:8,2048:10}[score2]
-                print modifier
-                if score2 == 2048:
-                    raise Exception('done')
-            else:
-                modifier *= 1
-        except:
-            pass
-    
+
     print ''
-    print 'actual player: ',population.actualPlayer+1
-    print 'player fitness: ',score
-    print 'player modifier: ',modifier
-    print 'actual gen: ',population.genCount
-    population.set_fitness(score,modifier)
-    
+    print 'actual player: ', population.actualPlayer+1
+    print 'player fitness: ', score*max(inputs)
+    print 'actual gen: ', population.genCount
+    population.set_fitness(score*max(inputs))
+    FIRE.find_element_by_class_name('restart-button').click()

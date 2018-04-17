@@ -1,28 +1,29 @@
 import random
-from constants import LIFESPAN,MUTATIONCHANCE,GENES
+from constants import INPUTS, MUTATIONCHANCE
+
 
 class Dna(object):
-    def __init__(self,genes = None):
+    def __init__(self, genes=None):
         if genes:
             self.genes = genes
         else:
-            self.genes = range(0,LIFESPAN)
-            for i in range(0,LIFESPAN):
-                self.genes[i] = random.randint(0,GENES)
-    
-    def crossover(self,partner):
-        mid = random.randint(0,len(self.genes)-1)
-        child = range(0,len(self.genes))
-        for i in range(0,len(self.genes)):
-            if random.randint(0,100)/float(100)<=MUTATIONCHANCE:
-                child[i] = random.randint(0,GENES)
+            self.genes = [random.uniform(-1, 1) for i in range(0, INPUTS)]
+
+    def crossover(self, partner):
+        mid = random.randint(int(len(self.genes)*0.30),
+                             int(len(self.genes)*0.70))
+        child = []
+        for i in range(0, len(self.genes)):
+            if random.random() <= MUTATIONCHANCE:
+                child.append(random.uniform(-1, 1))
             else:
-                if i<mid:
-                    child[i] = self.genes[i]
+                if i < mid:
+                    child.append(self.genes[i])
                 else:
-                    child[i] = partner.genes[i]
+                    child.append(partner.genes[i])
         return Dna(child)
-                
 
-
-    
+    def mutate(self, partner):
+        for i in range(len(self.genes)):
+            self.genes[i] = self.genes[i] + (partner.genes[i]*MUTATIONCHANCE)
+        return self
